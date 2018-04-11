@@ -1,6 +1,6 @@
-  env.DOCKERHUB_USERNAME = 'erang'
+  env.DOCKERHUB_USERNAME = 'davidharrington82'
 
-  node("docker-test") {
+  node("swarm-dev") {
     checkout scm
 
     stage("Unit Test") {
@@ -32,7 +32,7 @@
     }
   }
 
-  node("docker-stage") {
+  node("swarm-staging") {
     checkout scm
 
     stage("Staging") {
@@ -51,7 +51,7 @@
     }
   }
 
-  node("docker-prod") {
+  node("swarm-prod") {
     stage("Production") {
       try {
         // Create the service if it doesn't exist otherwise just update the image
