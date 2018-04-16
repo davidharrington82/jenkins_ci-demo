@@ -70,17 +70,17 @@
     stage("Production") {
       try {
         // Create the service if it doesn't exist otherwise just update the image
-        sh "
+        sh '''
           SERVICES=$(docker service ls --filter name=${imageName} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
             docker service create --replicas 3 --network swarm_overlay --name ${imageName} -p 8080:8080 ${docker_registry}/${imageName}:${BUILD_NUMBER}
           else
             docker service update --image ${docker_registry}/${imageName}:${BUILD_NUMBER} ${imageName}
           fi
-          "
+          '''
         // run some final tests in production
         checkout scm
-        sh "
+        sh '''
           sleep 60s 
           for i in `seq 1 20`;
           do
@@ -92,7 +92,7 @@
             sleep 10s
           done
           
-        "
+        '''
       }catch(e) {
         sh "docker service update --rollback ${imageName}"
         error "Service update failed in production"
