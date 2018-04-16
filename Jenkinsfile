@@ -1,5 +1,5 @@
  imageName = 'cd-demo'
- docker_registry = '${docker_registry}'
+ docker_registry = 'automationteamdev.azurecr.io'
  credential_id = '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402'
 
 
