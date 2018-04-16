@@ -42,7 +42,7 @@
       sh "docker tag ${imageName}:${BUILD_NUMBER} ${docker_registry}/${imageName}:${BUILD_NUMBER} "
     }
     stage("Publish") {
-     docker.withRegistry("https://${docker_registry}", ${credential_id}) {
+     docker.withRegistry("https://automationteamdev.azurecr.io", ${credential_id}) {
         sh "docker push ${docker_registry}/${imageName}:${BUILD_NUMBER}"
       }
     }
