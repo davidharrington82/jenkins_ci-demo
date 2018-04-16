@@ -1,4 +1,5 @@
  env.AzureContainerRegistry = 'cd-demo'
+ 
 
   node("swarm-dev") {
     checkout scm
@@ -24,10 +25,11 @@
     }
     stage("Build") {
       sh "docker build -t ${AzureContainerRegistry}:${BUILD_NUMBER} ."
+      sh "docker tag ${AzureContainerRegistry}:${BUILD_NUMBER} automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER} "
     }
     stage("Publish") {
      docker.withRegistry('https://automationteamdev.azurecr.io', '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402') {
-        sh "docker push ${AzureContainerRegistry}:${BUILD_NUMBER}"
+        sh "docker push automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER}"
       }
     }
   }
