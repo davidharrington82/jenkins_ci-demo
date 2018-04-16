@@ -3,9 +3,9 @@
  credential_id = '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402'
 
 
- def cleanUp(image)
+ def cleanUp()
  {
-    sh "docker rm -f ${image} || true"
+    sh "docker rm -f ${imageName} || true"
     sh "docker ps -aq | xargs docker rm || true"
     sh "docker images -aq -f dangling=true | xargs docker rmi || true"
  }
@@ -34,7 +34,7 @@
       catch(e) {
         error "Integration Test failed"
       }finally {
-       cleanUp(${imageName})
+       cleanUp()
       }
     }
     stage("Build") {
@@ -61,7 +61,7 @@
       } catch(e) {
         error "Staging failed"
       } finally {
-        cleanUp(${imageName})
+        cleanUp()
       }
     }
   }
