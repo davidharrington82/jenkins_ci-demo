@@ -40,9 +40,10 @@
     stage("Staging") {
       try {
         sh "docker rm -f cd-demo || true"
-        sh "docker run -d -p 8080:8080 --name=cd-demo automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER}"
-        sh "docker run --rm -v ${WORKSPACE}:/go/src/cd-demo --link=cd-demo -e SERVER=cd-demo golang go test cd-demo -v"
-
+        docker.withRegistry('https://automationteamdev.azurecr.io', '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402') {
+          sh "docker run -d -p 8080:8080 --name=cd-demo automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER}"
+          sh "docker run --rm -v ${WORKSPACE}:/go/src/cd-demo --link=cd-demo -e SERVER=cd-demo golang go test cd-demo -v"
+        }
       } catch(e) {
         error "Staging failed"
       } finally {
