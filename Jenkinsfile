@@ -40,7 +40,7 @@
     stage("Staging") {
       try {
         sh "docker rm -f cd-demo || true"
-        sh "docker run -d -p 8080:8080 --name=cd-demo ${AzureContainerRegistry}/cd-demo:${BUILD_NUMBER}"
+        sh "docker run -d -p 8080:8080 --name=cd-demo automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER}"
         sh "docker run --rm -v ${WORKSPACE}:/go/src/cd-demo --link=cd-demo -e SERVER=cd-demo golang go test cd-demo -v"
 
       } catch(e) {
@@ -62,9 +62,9 @@
           if [[ "$SERVICES" -eq 0 ]]; then
             docker network rm cd-demo || true
             docker network create --driver overlay --attachable cd-demo
-            docker service create --replicas 3 --network cd-demo --name cd-demo -p 8080:8080 ${AzureContainerRegistry}/cd-demo:${BUILD_NUMBER}
+            docker service create --replicas 3 --network cd-demo --name cd-demo -p 8080:8080 automationteamdev.azurecr.io/${AzureContainerRegistry}:${BUILD_NUMBER}
           else
-            docker service update --image ${AzureContainerRegistry}/cd-demo:${BUILD_NUMBER} cd-demo
+            docker service update --image automationteamdev.azurecr.io/${AzureContainerRegistry}/cd-demo:${BUILD_NUMBER} cd-demo
           fi
           '''
         // run some final tests in production
