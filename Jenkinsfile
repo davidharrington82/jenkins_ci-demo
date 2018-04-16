@@ -34,7 +34,7 @@
     }
   }
 
-  node("swarm-staging") {
+  node("swarm-dev") {
     checkout scm
 
     stage("Staging") {
@@ -54,7 +54,7 @@
     }
   }
 
-  node("swarm-prod") {
+  node("swarm-dev") {
     stage("Production") {
       try {
         // Create the service if it doesn't exist otherwise just update the image
