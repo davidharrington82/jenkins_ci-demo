@@ -72,6 +72,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
             docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
           fi
           '''
+        }
         // run some final tests in production
         checkout scm
         sh '''
@@ -94,5 +95,4 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         sh "docker ps -aq | xargs docker rm || true"
       }
     }
-  }
   }
