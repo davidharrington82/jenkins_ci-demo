@@ -81,7 +81,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           do
             STATUS=$(docker service inspect --format '{{ .UpdateStatus.State }}' ${IMAGE_NAME})
             if [[ "$STATUS" != "updating" ]]; then
-              docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --network swarm_overlay -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Integration
+              docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Integration
               break
             fi
             sleep 10s
