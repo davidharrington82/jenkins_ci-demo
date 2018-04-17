@@ -67,8 +67,16 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         sh '''
           SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
+            \\ pull latest image from  AzureContainerRegeitries
             docker pull ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
-            docker service create --replicas 3 -p 8080:8080 --name=${IMAGE_NAME} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+            \\ Create Docker-Swarm service... 
+            docker service create \
+            --name ${IMAGE_NAME} \
+            --publish 8080:8080 \
+            --constraint "node.labels.environment == prod" \
+            --constraint "node.labels.node == agent" \
+            --network swarm_overlay \            
+            ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
             docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
           fi
