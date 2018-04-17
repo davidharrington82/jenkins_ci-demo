@@ -67,7 +67,8 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         sh '''
           SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
-            docker service create --replicas 3 --name ${IMAGE_NAME} -p 8080:8080 ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+            docker pull ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+            docker service create --replicas 3 -p 8080:8080 --name=${IMAGE_NAME} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
           else
             docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
           fi
