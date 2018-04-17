@@ -68,12 +68,13 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
           docker pull ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+          sleep 60s
           docker service create \
             --name ${IMAGE_NAME} \
             --publish 8080:8080 \
             --network swarm_overlay \
             --constraint "node.labels.environment == prod" \
-            --constraint "node.labels.node == agent" \
+            --constraint "node.labels.type == agent" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
             docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
