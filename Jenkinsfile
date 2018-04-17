@@ -61,6 +61,8 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
   node("swarm-prod") {
     stage("Production") {
       try {
+        // Connect and auth with AzureContainerRegeitries
+        docker.withRegistry("https://automationteamdev.azurecr.io", 'dcc9154c-828d-461d-9443-47a85bd38aae') {
         // Create the service if it doesn't exist otherwise just update the image
         sh '''
           SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
@@ -78,7 +80,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           do
             STATUS=$(docker service inspect --format '{{ .UpdateStatus.State }}' ${IMAGE_NAME})
             if [[ "$STATUS" != "updating" ]]; then
-              docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --network swarm_overlay -e SERVER=cd-demo golang go test ${IMAGE_NAME} -v --run Integration
+              docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --network swarm_overlay -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Integration
               break
             fi
             sleep 10s
@@ -92,4 +94,5 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         sh "docker ps -aq | xargs docker rm || true"
       }
     }
+  }
   }
