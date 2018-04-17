@@ -1,81 +1,74 @@
- imageName = 'cd-demo'
- docker_registry = 'automationteamdev.azurecr.io'
- credential_id = '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402'
+env.IMAGE_NAME = 'cd-demo'
+env.AZURE_REGISTRY = 'automationteam.azurecr.io'
+env.CREDENTIAL_ID = '7d472323-305e-4c05-9307-1254c7d23db9'
 
-
- def cleanUp()
- {
-    sh "docker rm -f ${imageName} || true"
-    sh "docker ps -aq | xargs docker rm || true"
-    sh "docker images -aq -f dangling=true | xargs docker rmi || true"
- }
-
-
-
- 
-
-  node("swarm-dev") {
+  node("swarm-qa") {
     checkout scm
 
     stage("Unit Test") {
-      sh "docker run --rm -v ${WORKSPACE}:/go/src/${imageName} golang go test ${imageName} -v --run Unit"
+      // --rm = removes container after unit test and peforms clean up | -v cleans volume
+      sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Unit"
     }
     stage("Integration Test") {
       try {
         // create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
-        sh "docker build -t ${imageName} ."
+        sh "docker build -t ${IMAGE_NAME} ."
         // rm = remove container =f force the removal of a running container 
-        sh "docker rm -f ${imageName} || true"
+        sh "docker rm -f ${IMAGE_NAME} || true"
         // -d = create container in background
-        sh "docker run -d -p 8080:8080 --name=${imageName} ${imageName}"
+        sh "docker run -d -p 8080:8080 --name=${IMAGE_NAME} ${IMAGE_NAME}"
         // env variable is used to set the server where go test will connect to run the test
-        sh "docker run --rm -v ${WORKSPACE}:/go/src/${imageName} --link=${imageName} -e SERVER=${imageName} golang go test ${imageName} -v --run Integration"
+        sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --link=${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Integration"
       }
       catch(e) {
         error "Integration Test failed"
       }finally {
-       cleanUp()
+        sh "docker rm -f ${IMAGE_NAME} || true"
+        sh "docker ps -aq | xargs docker rm || true"
+        sh "docker images -aq -f dangling=true | xargs docker rmi || true"
       }
     }
     stage("Build") {
-      sh "docker build -t ${imageName}:${BUILD_NUMBER} ."
-      sh "docker tag ${imageName}:${BUILD_NUMBER} ${docker_registry}/${imageName}:${BUILD_NUMBER} "
+      sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+      sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} "
     }
     stage("Publish") {
-     docker.withRegistry("https://automationteamdev.azurecr.io", '8d4c4c0d-04c2-4bee-8f78-9c67e1c8b402') {
-        sh "docker push ${docker_registry}/${imageName}:${BUILD_NUMBER}"
+     docker.withRegistry("https://automationteam.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
+        sh "docker push ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
       }
     }
   }
 
-  node("swarm-dev") {
+  node("swarm-stage") {
     checkout scm
 
     stage("Staging") {
       try {
-        sh "docker rm -f ${imageName} || true"
-        docker.withRegistry("https://${docker_registry}", ${credential_id}) {
-          sh "docker run -d -p 8080:8080 --name=${imageName} ${docker_registry}/${imageName}:${BUILD_NUMBER}"
-          sh "docker run --rm -v ${WORKSPACE}:/go/src/${imageName} --link=${imageName} -e SERVER=${imageName} golang go test ${imageName} -v"
+        sh "docker rm -f ${IMAGE_NAME} || true"
+        docker.withRegistry("https://automationteam.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
+          sh "docker run -d -p 8080:8080 --name=${IMAGE_NAME} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
+          sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --link=${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v"
         }
       } catch(e) {
         error "Staging failed"
       } finally {
-        cleanUp()
+        sh "docker rm -f ${IMAGE_NAME} || true"
+        sh "docker ps -aq | xargs docker rm || true"
+        sh "docker images -aq -f dangling=true | xargs docker rmi || true"
       }
     }
   }
 
-  node("swarm-dev") {
+  node("swarm-prod") {
     stage("Production") {
       try {
         // Create the service if it doesn't exist otherwise just update the image
         sh '''
-          SERVICES=$(docker service ls --filter name=${imageName} --quiet | wc -l)
+          SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
-            docker service create --replicas 3 --network swarm_overlay --name ${imageName} -p 8080:8080 ${docker_registry}/${imageName}:${BUILD_NUMBER}
+            docker service create --replicas 3 --network swarm_overlay --name ${IMAGE_NAME} -p 8080:8080 ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
-            docker service update --image ${docker_registry}/${imageName}:${BUILD_NUMBER} ${imageName}
+            docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
           fi
           '''
         // run some final tests in production
@@ -84,9 +77,9 @@
           sleep 60s 
           for i in `seq 1 20`;
           do
-            STATUS=$(docker service inspect --format '{{ .UpdateStatus.State }}' ${imageName})
+            STATUS=$(docker service inspect --format '{{ .UpdateStatus.State }}' ${IMAGE_NAME})
             if [[ "$STATUS" != "updating" ]]; then
-              docker run --rm -v ${WORKSPACE}:/go/src/${imageName} --network swarm_overlay -e SERVER=cd-demo golang go test ${imageName} -v --run Integration
+              docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --network swarm_overlay -e SERVER=cd-demo golang go test ${IMAGE_NAME} -v --run Integration
               break
             fi
             sleep 10s
@@ -94,7 +87,7 @@
           
         '''
       }catch(e) {
-        sh "docker service update --rollback ${imageName}"
+        sh "docker service update --rollback ${IMAGE_NAME}"
         error "Service update failed in production"
       }finally {
         sh "docker ps -aq | xargs docker rm || true"
