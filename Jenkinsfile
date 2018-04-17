@@ -1,5 +1,5 @@
 env.IMAGE_NAME = 'cd-demo'
-env.AZURE_REGISTRY = 'automationteam.azurecr.io'
+env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
 env.CREDENTIAL_ID = '7d472323-305e-4c05-9307-1254c7d23db9'
 
   node("swarm-qa") {
@@ -33,7 +33,7 @@ env.CREDENTIAL_ID = '7d472323-305e-4c05-9307-1254c7d23db9'
       sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} "
     }
     stage("Publish") {
-     docker.withRegistry("https://automationteam.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
+     docker.withRegistry("https://automationteamdev.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
         sh "docker push ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
       }
     }
@@ -45,7 +45,7 @@ env.CREDENTIAL_ID = '7d472323-305e-4c05-9307-1254c7d23db9'
     stage("Staging") {
       try {
         sh "docker rm -f ${IMAGE_NAME} || true"
-        docker.withRegistry("https://automationteam.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
+        docker.withRegistry("https://automationteamdev.azurecr.io", '7d472323-305e-4c05-9307-1254c7d23db9') {
           sh "docker run -d -p 8080:8080 --name=${IMAGE_NAME} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
           sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --link=${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v"
         }
