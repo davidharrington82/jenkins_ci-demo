@@ -1,6 +1,6 @@
 env.IMAGE_NAME = 'cd-demo'
 env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
-env.AZURE_CREDID = 'dcc9154c-828d-461d-9443-47a85bd38aae'
+env.AZURE_CRED_ID = 'dcc9154c-828d-461d-9443-47a85bd38aae'
 env.CONTAINER_TAG = 'latest'
 
   node("swarm-qa") {
@@ -32,7 +32,7 @@ env.CONTAINER_TAG = 'latest'
       sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} "
     }
     stage("Publish") {
-     docker.withRegistry("https://${AZURE_REGISTRY}", "${AZURE_CREDID}") {
+     docker.withRegistry("https://${AZURE_REGISTRY}", "${AZURE_CRED_ID}") {
         sh "docker push ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
       }
     }
