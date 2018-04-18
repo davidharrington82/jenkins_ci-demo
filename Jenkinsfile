@@ -24,6 +24,7 @@ env.CONTAINER_TAG = 'latest'
       catch(e) {
         error "Integration Test failed"
       }finally {
+        // Clean-up container if lingering 
         sh "docker rm -f ${IMAGE_NAME} || true"
       }
     }
@@ -55,7 +56,9 @@ env.CONTAINER_TAG = 'latest'
       }
     }
   }
-
+Stage('Deploy Approval') {
+  input "Deploy to Prod?"
+}
   node("swarm-prod") {
     stage("Production") {
       try {
