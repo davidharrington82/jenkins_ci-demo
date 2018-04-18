@@ -23,8 +23,6 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         error "Integration Test failed"
       }finally {
         sh "docker rm -f ${IMAGE_NAME} || true"
-        sh "docker ps -aq | xargs docker rm || true"
-        sh "docker images -aq -f dangling=true | xargs docker rmi || true"
       }
     }
     stage("Build") {
@@ -52,8 +50,6 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         error "Staging failed"
       } finally {
         sh "docker rm -f ${IMAGE_NAME} || true"
-        sh "docker ps -aq | xargs docker rm || true"
-        sh "docker images -aq -f dangling=true | xargs docker rmi || true"
       }
     }
   }
