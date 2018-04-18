@@ -24,11 +24,12 @@ env.CONTAINER_TAG = 'latest'
       catch(e) {
         error "Integration Test failed"
       }finally {
-        // Clean-up container if lingering 
+        // Clean-up lingering container
         sh "docker rm -f ${IMAGE_NAME} || true"
       }
     }
     stage("Build") {
+      // Docker build 
       sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
       sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} "
     }
@@ -57,7 +58,7 @@ env.CONTAINER_TAG = 'latest'
     }
   }
 // Throw user prompt for approval
-stage("Deploy Approval") {
+stage("Manual Approval") {
   input "Deploy to Prod?"
 }
   
