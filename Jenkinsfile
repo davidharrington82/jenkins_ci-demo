@@ -79,7 +79,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           fi
           '''
         }
-        // run some final tests in production
+        // final tests in production
        /* checkout scm
         sh '''
           sleep 60s 
