@@ -44,7 +44,7 @@ env.CONTAINER_TAG = 'latest'
     stage("Staging") {
       try {
         sh "docker rm -f ${IMAGE_NAME} || true"
-        docker.withRegistry("https://automationteamdev.azurecr.io", 'dcc9154c-828d-461d-9443-47a85bd38aae') {
+        docker.withRegistry("https://${AZURE_REGISTRY}", "${AZURE_CRED_ID}") {
           sh "docker run -d -p 8080:8080 --name=${IMAGE_NAME} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
           sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --link=${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v"
         }
