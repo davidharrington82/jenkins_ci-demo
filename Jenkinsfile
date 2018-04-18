@@ -70,7 +70,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
             --publish 8080:8080 \
             --network swarm_overlay \
             --constraint "node.labels.environment == prod" \
-            -constraint "node.labels.type == agent" \
+            --constraint "node.labels.type == agent" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
             docker service update --with-registry-auth \
