@@ -1,7 +1,7 @@
-def IMAGE_NAME = 'cd-demo'
-def AZURE_REGISTRY = 'automationteamdev.azurecr.io'
-def AZURE_CREDID = 'dcc9154c-828d-461d-9443-47a85bd38aae'
-def CONTAINER_TAG= 'latest'
+def IMAGE_NAME = "cd-demo"
+def AZURE_REGISTRY = "automationteamdev.azurecr.io"
+def AZURE_CREDID = "dcc9154c-828d-461d-9443-47a85bd38aae"
+def CONTAINER_TAG= "latest"
 
   node("swarm-qa") {
     checkout scm
