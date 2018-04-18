@@ -73,7 +73,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
             --name ${IMAGE_NAME} \
             --publish 8080:8080 \
             --network swarm_overlay \
-            --replicas 3 \
+            --replicas 4 \
             --constraint "node.role == manager" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
