@@ -72,8 +72,6 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           docker service create \
             --name ${IMAGE_NAME} \
             --publish 8080:8080 \
-            --network swarm_overlay \
-            --replicas 4 \
             --constraint "node.role == manager" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
@@ -82,7 +80,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           '''
         }
         // run some final tests in production
-        checkout scm
+       /* checkout scm
         sh '''
           sleep 60s 
           for i in `seq 1 20`;
@@ -96,6 +94,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
           done
           
         '''
+       */ 
       }catch(e) {
         sh "docker service update --rollback ${IMAGE_NAME}"
         error "Service update failed in production"
