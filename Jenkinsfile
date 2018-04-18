@@ -61,24 +61,22 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
   node("swarm-prod") {
     stage("Production") {
       try {
-        // Connect and auth with AzureContainerRegeitries
-        docker.withRegistry("https://automationteamdev.azurecr.io", 'dcc9154c-828d-461d-9443-47a85bd38aae') {
         // Create the service if it doesn't exist otherwise just update the image
         sh '''
           SERVICES=$(docker service ls --filter name=${IMAGE_NAME} --quiet | wc -l)
           if [[ "$SERVICES" -eq 0 ]]; then
-          docker pull ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
-          sleep 60s
-          docker service create \
+            docker service create --with-registry-auth \
             --name ${IMAGE_NAME} \
             --publish 8080:8080 \
-            --constraint "node.role == manager" \
+            --network swarm_overlay \
+            --constraint "node.labels.environment == prod" \
+            -constraint "node.labels.type == agent" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
-            docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
+            docker service update --with-registry-auth \
+            --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
           fi
           '''
-        }
         // final tests in production
        /* checkout scm
         sh '''
