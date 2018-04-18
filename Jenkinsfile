@@ -73,8 +73,8 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
             --name ${IMAGE_NAME} \
             --publish 8080:8080 \
             --network swarm_overlay \
-            --constraint "node.labels.environment == prod" \
-            --constraint "node.labels.type == agent" \
+            --replicas 3 \
+            --constraint "node.role == manager" \
             ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
           else
             docker service update --image ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}
