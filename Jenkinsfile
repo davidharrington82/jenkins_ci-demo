@@ -1,5 +1,6 @@
 env.IMAGE_NAME = 'cd-demo'
 env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
+def CONTAINER_TAG="latest"
 
   node("swarm-qa") {
     checkout scm
@@ -93,7 +94,7 @@ env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
         sh "docker service update --rollback ${IMAGE_NAME}"
         error "Service update failed in production"
       }finally {
-        sh "docker ps -aq | xargs docker rm || true"
+      // sh "docker ps -aq | xargs docker rm || true"
       }
     }
   }
