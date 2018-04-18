@@ -56,9 +56,11 @@ env.CONTAINER_TAG = 'latest'
       }
     }
   }
-Stage('Deploy Approval') {
+// Throw user prompt for approval
+stage("Deploy Approval") {
   input "Deploy to Prod?"
 }
+  
   node("swarm-prod") {
     stage("Production") {
       try {
