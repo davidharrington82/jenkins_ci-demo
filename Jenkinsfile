@@ -1,6 +1,7 @@
-env.IMAGE_NAME = 'cd-demo'
-env.AZURE_REGISTRY = 'automationteamdev.azurecr.io'
-def CONTAINER_TAG="latest"
+def IMAGE_NAME = 'cd-demo'
+def AZURE_REGISTRY = 'automationteamdev.azurecr.io'
+def AZURE_CREDID = 'dcc9154c-828d-461d-9443-47a85bd38aae'
+def CONTAINER_TAG= 'latest'
 
   node("swarm-qa") {
     checkout scm
@@ -17,7 +18,7 @@ def CONTAINER_TAG="latest"
         sh "docker rm -f ${IMAGE_NAME} || true"
         // -d = create container in background
         sh "docker run -d -p 8080:8080 --name=${IMAGE_NAME} ${IMAGE_NAME}"
-        // env variable is used to set the server where go test will connect to run the test
+        // env variable is used to set the server where go test will connect to run the intergration test
         sh "docker run --rm -v ${WORKSPACE}:/go/src/${IMAGE_NAME} --link=${IMAGE_NAME} -e SERVER=${IMAGE_NAME} golang go test ${IMAGE_NAME} -v --run Integration"
       }
       catch(e) {
@@ -31,7 +32,7 @@ def CONTAINER_TAG="latest"
       sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} "
     }
     stage("Publish") {
-     docker.withRegistry("https://automationteamdev.azurecr.io", 'dcc9154c-828d-461d-9443-47a85bd38aae') {
+     docker.withRegistry("https://${AZURE_REGISTRY}", "${AZURE_CREDID}") {
         sh "docker push ${AZURE_REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
       }
     }
